@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  ECR2ECSRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: "Codepipeline"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "logs:CreateLogStream"
+                Resource: "*"
+              -
+                Effect: "Allow"
+                Action: "logs:PutLogEvents"
+                Resource: "*"
+              -
+                Action: "codepipeline:PutJobSuccessResult"
+                Effect: "Allow"
+                Resource: "*"
+              - 
+                Action: "codepipeline:PutJobFailureResult"
+                Effect: "Allow"
+                Resource: "*"
+              - 
+                Action: "s3:*"
+                Effect: "Allow"
+                Resource: "*"
+              - 
+                Action: "s3:PutObject"
+                Effect: "Allow"
+                Resource: "*"
+              - 
+                Action: "s3:GetObject"
+                Effect: "Allow"
+                Resource: "*"
+              # -
+              #   Effect: "Allow"
+              #   Action: "*"
+              #   Resource: "*"
+                
+  ECR2ECSFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code: build/code-python.zip
+      Handler: lambda-python/convertECR2ECS.handler
+      Role: !GetAtt ECR2ECSRole.Arn
+      Runtime: python3.7
